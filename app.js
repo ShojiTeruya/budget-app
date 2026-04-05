@@ -13,6 +13,7 @@ const EXPENSE_CATEGORIES = [
   { name: '娯楽', icon: '🎮' },
   { name: '医療', icon: '💊' },
   { name: '衣服', icon: '👕' },
+  { name: '教育費', icon: '📚' },
   { name: 'その他', icon: '📦' }
 ];
 const INCOME_CATEGORIES = [
