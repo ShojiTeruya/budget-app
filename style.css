@@ -88,29 +88,104 @@ body {
 .section { display: none; padding: 16px; }
 .section.active { display: block; }
 
-/* Summary */
-.summary {
+/* Calendar card */
+.calendar-card {
   background: #fff;
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 12px;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  font-size: 14px;
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
 }
-.summary-row.total {
-  border-top: 1px solid var(--border);
-  margin-top: 8px;
-  padding-top: 12px;
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
   font-weight: 700;
-  font-size: 16px;
+  color: var(--gray);
+  padding: 6px 0;
 }
-.summary-row .label { color: var(--gray); }
-.summary-row .amount { font-weight: 700; }
+.cal-weekday.sat { color: #1976d2; }
+.cal-weekday.sun { color: var(--expense); }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-cell {
+  aspect-ratio: 1 / 1.1;
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+  background: #fafafa;
+  min-height: 44px;
+}
+.cal-cell.other-month {
+  background: transparent;
+  color: #ccc;
+  cursor: default;
+}
+.cal-cell.today {
+  background: #fff3e0;
+  outline: 2px solid var(--primary);
+}
+.cal-cell.selected {
+  background: var(--primary-light);
+}
+.cal-date {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.1;
+}
+.cal-cell.sat .cal-date { color: #1976d2; }
+.cal-cell.sun .cal-date { color: var(--expense); }
+.cal-cell.other-month .cal-date { color: #ccc; }
+.cal-expense {
+  font-size: 9px;
+  color: var(--expense);
+  font-weight: 700;
+  margin-top: auto;
+  line-height: 1.1;
+}
+.cal-income {
+  font-size: 9px;
+  color: var(--income);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.calendar-summary {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 8px 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.cal-sum-item {
+  text-align: center;
+  flex: 1;
+}
+.cal-sum-label {
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+.cal-sum-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+.cal-sum-value.income { color: var(--income); }
+.cal-sum-value.expense { color: var(--expense); }
 .amount.income { color: var(--income); }
 .amount.expense { color: var(--expense); }
 .amount.balance-positive { color: var(--income); }

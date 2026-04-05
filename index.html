@@ -30,18 +30,30 @@
 
   <!-- Home -->
   <div class="section active" id="section-home">
-    <div class="summary">
-      <div class="summary-row">
-        <span class="label">収入</span>
-        <span class="amount income" id="sum-income">¥0</span>
+    <div class="calendar-card">
+      <div class="calendar-weekdays">
+        <div class="cal-weekday">月</div>
+        <div class="cal-weekday">火</div>
+        <div class="cal-weekday">水</div>
+        <div class="cal-weekday">木</div>
+        <div class="cal-weekday">金</div>
+        <div class="cal-weekday sat">土</div>
+        <div class="cal-weekday sun">日</div>
       </div>
-      <div class="summary-row">
-        <span class="label">支出</span>
-        <span class="amount expense" id="sum-expense">¥0</span>
-      </div>
-      <div class="summary-row total">
-        <span class="label">収支</span>
-        <span class="amount" id="sum-balance">¥0</span>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-summary">
+        <div class="cal-sum-item">
+          <div class="cal-sum-label">収入</div>
+          <div class="cal-sum-value income" id="sum-income">¥0</div>
+        </div>
+        <div class="cal-sum-item">
+          <div class="cal-sum-label">支出</div>
+          <div class="cal-sum-value expense" id="sum-expense">¥0</div>
+        </div>
+        <div class="cal-sum-item">
+          <div class="cal-sum-label">合計</div>
+          <div class="cal-sum-value" id="sum-balance">¥0</div>
+        </div>
       </div>
     </div>
     <div id="tx-list"></div>

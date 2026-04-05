@@ -66,6 +66,7 @@ let currentTab = 'home';
 let editingTxId = null;
 let editingFixedId = null;
 let formType = 'expense';
+let selectedDate = null; // yyyy-mm-dd or null (= show all)
 
 // ===== Fixed expense auto-add =====
 function runFixedExpenseAutoAdd() {
@@ -127,9 +128,86 @@ const $$ = s => document.querySelectorAll(s);
 // ===== Rendering =====
 function render() {
   renderMonthLabel();
+  renderCalendar();
   renderHome();
   renderChart();
   renderFixedList();
+}
+
+function renderCalendar() {
+  const grid = $('#calendar-grid');
+  const { year, month } = parseYm(currentYm);
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay = new Date(year, month, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // JS getDay: 0=Sun..6=Sat. Convert to Mon-first: 月=0..日=6
+  const firstWeekday = (firstDay.getDay() + 6) % 7;
+
+  // Today
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // Aggregate by date
+  const byDate = {};
+  transactions.filter(t => t.date.startsWith(currentYm)).forEach(t => {
+    if (!byDate[t.date]) byDate[t.date] = { income: 0, expense: 0 };
+    byDate[t.date][t.type] += t.amount;
+  });
+
+  // Build cells (always 42 = 6 weeks)
+  let html = '';
+  // Leading blanks (previous month)
+  const prevMonthLast = new Date(year, month - 1, 0).getDate();
+  for (let i = firstWeekday - 1; i >= 0; i--) {
+    html += `<div class="cal-cell other-month"><div class="cal-date">${prevMonthLast - i}</div></div>`;
+  }
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${currentYm}-${String(d).padStart(2, '0')}`;
+    const dayDate = new Date(year, month - 1, d);
+    const weekday = (dayDate.getDay() + 6) % 7; // 0=Mon..6=Sun
+    const cls = ['cal-cell'];
+    if (weekday === 5) cls.push('sat');
+    if (weekday === 6) cls.push('sun');
+    if (dateStr === todayStr) cls.push('today');
+    if (dateStr === selectedDate) cls.push('selected');
+
+    const agg = byDate[dateStr];
+    let amountHtml = '';
+    if (agg) {
+      if (agg.income > 0) amountHtml += `<div class="cal-income">+${formatShort(agg.income)}</div>`;
+      if (agg.expense > 0) amountHtml += `<div class="cal-expense">-${formatShort(agg.expense)}</div>`;
+    }
+
+    html += `<div class="${cls.join(' ')}" data-date="${dateStr}">
+      <div class="cal-date">${d}</div>
+      ${amountHtml}
+    </div>`;
+  }
+  // Trailing blanks to complete 6 weeks
+  const totalCells = firstWeekday + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= trailing; i++) {
+    html += `<div class="cal-cell other-month"><div class="cal-date">${i}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Attach click handlers to current-month cells
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const d = cell.dataset.date;
+      selectedDate = (selectedDate === d) ? null : d;
+      renderCalendar();
+      renderHome();
+    });
+  });
+}
+
+function formatShort(n) {
+  if (n >= 10000) return Math.round(n / 1000) + 'k';
+  return n.toLocaleString('ja-JP');
 }
 
 function renderMonthLabel() {
@@ -151,17 +229,20 @@ function renderHome() {
   $('#sum-expense').textContent = formatYen(expense);
   const balEl = $('#sum-balance');
   balEl.textContent = formatYen(balance);
-  balEl.className = 'amount ' + (balance >= 0 ? 'balance-positive' : 'balance-negative');
+  balEl.className = 'cal-sum-value ' + (balance >= 0 ? 'income' : 'expense');
 
-  // Transaction list grouped by date
+  // Filter by selected date if any
+  const listTx = selectedDate ? monthTx.filter(t => t.date === selectedDate) : monthTx;
+
   const container = $('#tx-list');
-  if (monthTx.length === 0) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><p>この月の記録はまだありません</p></div>`;
+  if (listTx.length === 0) {
+    const msg = selectedDate ? 'この日の記録はありません' : 'この月の記録はまだありません';
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><p>${msg}</p></div>`;
     return;
   }
 
   const grouped = {};
-  monthTx.forEach(t => {
+  listTx.forEach(t => {
     if (!grouped[t.date]) grouped[t.date] = [];
     grouped[t.date].push(t);
   });
@@ -326,6 +407,7 @@ function changeMonth(delta) {
   const { year, month } = parseYm(currentYm);
   const d = new Date(year, month - 1 + delta, 1);
   currentYm = ymKey(d);
+  selectedDate = null;
   render();
 }
 
