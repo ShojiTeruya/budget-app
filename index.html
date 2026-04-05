@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1976d2">
+  <title>家計簿</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <div class="header">
+    <h1>家計簿</h1>
+    <div class="month-selector">
+      <button id="prev-month">&lt;</button>
+      <span class="current-month" id="current-month"></span>
+      <button id="next-month">&gt;</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="home">ホーム</button>
+    <button class="tab" data-tab="chart">グラフ</button>
+    <button class="tab" data-tab="fixed">固定費</button>
+  </div>
+
+  <!-- Home -->
+  <div class="section active" id="section-home">
+    <div class="summary">
+      <div class="summary-row">
+        <span class="label">収入</span>
+        <span class="amount income" id="sum-income">¥0</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">支出</span>
+        <span class="amount expense" id="sum-expense">¥0</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">収支</span>
+        <span class="amount" id="sum-balance">¥0</span>
+      </div>
+    </div>
+    <div id="tx-list"></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="section" id="section-chart">
+    <div class="chart-card">
+      <div class="chart-title">月別支出推移（直近6ヶ月）</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">カテゴリ別支出（今月）</div>
+      <div class="pie-container" id="pie-container"></div>
+    </div>
+  </div>
+
+  <!-- Fixed -->
+  <div class="section" id="section-fixed">
+    <div id="fixed-list"></div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="fab">+</button>
+
+  <!-- Transaction Modal -->
+  <div class="modal-overlay" id="tx-modal">
+    <div class="modal">
+      <div class="modal-title">
+        <span id="tx-modal-title">記録を追加</span>
+        <button class="modal-close" id="tx-modal-close">&times;</button>
+      </div>
+      <div class="type-toggle" id="type-toggle">
+        <button data-type="expense" class="active expense">支出</button>
+        <button data-type="income">収入</button>
+      </div>
+      <form id="tx-form">
+        <div class="form-group">
+          <label>カテゴリ</label>
+          <select id="tx-form-category"></select>
+        </div>
+        <div class="form-group">
+          <label>金額</label>
+          <input type="number" id="tx-form-amount" min="1" placeholder="0" required>
+        </div>
+        <div class="form-group">
+          <label>日付</label>
+          <input type="date" id="tx-form-date" required>
+        </div>
+        <div class="form-group">
+          <label>メモ（任意）</label>
+          <input type="text" id="tx-form-memo" placeholder="スーパーで買い物など">
+        </div>
+        <button type="submit" class="btn-primary" id="tx-submit-btn">追加する</button>
+        <button type="button" class="btn-secondary" id="tx-delete-btn" style="display:none">削除する</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Fixed Modal -->
+  <div class="modal-overlay" id="fixed-modal">
+    <div class="modal">
+      <div class="modal-title">
+        <span id="fixed-modal-title">固定費を追加</span>
+        <button class="modal-close" id="fixed-modal-close">&times;</button>
+      </div>
+      <form id="fixed-form">
+        <div class="form-group">
+          <label>名称</label>
+          <input type="text" id="fixed-form-name" placeholder="家賃、電気代など" required>
+        </div>
+        <div class="form-group">
+          <label>カテゴリ</label>
+          <select id="fixed-form-category"></select>
+        </div>
+        <div class="form-group">
+          <label>金額</label>
+          <input type="number" id="fixed-form-amount" min="1" placeholder="0" required>
+        </div>
+        <p style="font-size:12px;color:#757575;margin-bottom:16px">※ 毎月1日に自動で支出として計上されます</p>
+        <button type="submit" class="btn-primary" id="fixed-submit-btn">追加する</button>
+        <button type="button" class="btn-secondary" id="fixed-delete-btn" style="display:none">削除する</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
