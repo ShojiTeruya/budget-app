@@ -502,6 +502,92 @@ function handleFabClick() {
   else openAddTxModal();
 }
 
+// ===== Calculator =====
+let calcExpression = '';
+let calcTargetInputId = null;
+
+function openCalculator(targetInputId) {
+  calcTargetInputId = targetInputId;
+  const currentVal = document.getElementById(targetInputId).value;
+  calcExpression = currentVal && !isNaN(currentVal) ? String(currentVal) : '';
+  updateCalcDisplay();
+  $('#calc-modal').classList.add('show');
+}
+
+function closeCalculator() {
+  $('#calc-modal').classList.remove('show');
+  calcTargetInputId = null;
+}
+
+function evaluateExpression(expr) {
+  if (!expr) return 0;
+  // Replace display operators with JS operators
+  const jsExpr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+  // Only allow digits, operators, parens, dot, spaces
+  if (!/^[\d+\-*/.() ]+$/.test(jsExpr)) throw new Error('無効な式');
+  // eslint-disable-next-line no-new-func
+  const result = Function('"use strict"; return (' + jsExpr + ')')();
+  if (typeof result !== 'number' || !isFinite(result)) throw new Error('計算エラー');
+  return result;
+}
+
+function updateCalcDisplay() {
+  const exprEl = $('#calc-expression');
+  const resultEl = $('#calc-result');
+  exprEl.textContent = calcExpression || '0';
+  try {
+    // Only evaluate if expression ends with a digit or closing paren
+    if (!calcExpression || /[+\-*/×÷−(]$/.test(calcExpression)) {
+      resultEl.textContent = '= ' + (calcExpression ? '...' : '0');
+      resultEl.classList.remove('error');
+      return;
+    }
+    const result = evaluateExpression(calcExpression);
+    resultEl.textContent = '= ' + formatYen(result);
+    resultEl.classList.remove('error');
+  } catch (e) {
+    resultEl.textContent = 'エラー';
+    resultEl.classList.add('error');
+  }
+}
+
+function handleCalcKey(key) {
+  if (key === 'C') {
+    calcExpression = '';
+  } else if (key === '⌫') {
+    calcExpression = calcExpression.slice(0, -1);
+  } else {
+    // Prevent multiple operators in a row
+    const lastChar = calcExpression.slice(-1);
+    const isOp = c => '+−×÷'.includes(c);
+    if (isOp(key) && isOp(lastChar)) {
+      calcExpression = calcExpression.slice(0, -1) + key;
+    } else if (key === '.' && /\.\d*$/.test(calcExpression)) {
+      // Prevent multiple dots in current number
+      return;
+    } else {
+      calcExpression += key;
+    }
+  }
+  updateCalcDisplay();
+}
+
+function confirmCalculator() {
+  if (!calcExpression) { closeCalculator(); return; }
+  try {
+    const result = evaluateExpression(calcExpression);
+    const rounded = Math.round(result);
+    if (rounded <= 0) {
+      alert('金額は1円以上にしてください');
+      return;
+    }
+    document.getElementById(calcTargetInputId).value = rounded;
+    closeCalculator();
+  } catch (e) {
+    alert('計算式にエラーがあります');
+  }
+}
+
 // ===== Utils =====
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -532,6 +618,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#fixed-delete-btn').addEventListener('click', deleteFixed);
   $('#fixed-modal-close').addEventListener('click', closeFixedModal);
   $('#fixed-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeFixedModal(); });
+
+  // Calculator events
+  $('#tx-calc-btn').addEventListener('click', () => openCalculator('tx-form-amount'));
+  $('#fixed-calc-btn').addEventListener('click', () => openCalculator('fixed-form-amount'));
+  $('#calc-modal-close').addEventListener('click', closeCalculator);
+  $('#calc-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeCalculator(); });
+  $('#calc-confirm-btn').addEventListener('click', confirmCalculator);
+  $$('.calc-key').forEach(btn => {
+    btn.addEventListener('click', () => handleCalcKey(btn.dataset.key));
+  });
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js');
